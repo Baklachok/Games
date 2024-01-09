@@ -1,61 +1,26 @@
+<!-- base.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой веб-сайт</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        main {
-            padding: 20px;
-        }
-
-        footer {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .login-button {
-            background-color: #fff;
-            color: #333;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-    </style>
+    <title>{% block title %}Мой веб-сайт{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
 
     <header>
-        <h1>Добро пожаловать на мой веб-сайт!</h1>
-        <button class="login-button">Вход</button>
+        <h1>{% block header %}Добро пожаловать на мой веб-сайт!{% endblock header %}</h1>
+        {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}"><button class="login-button">Выход</button></a>
+        {% else %}
+            <a href="{% url 'login' %}"><button class="login-button">Вход</button></a>
+        {% endif %}
     </header>
 
-    <main>
-        <p>Это простой HTML-шаблон.</p>
-        <p>Здесь вы можете добавить свой контент.</p>
-    </main>
+    {% block content %}
+    {% endblock content %}
 
     <footer>
         <p>&copy; 2024 Мой веб-сайт. Все права защищены.</p>
