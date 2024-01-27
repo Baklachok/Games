@@ -1,5 +1,6 @@
 from django.contrib.auth import logout, login
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
 
@@ -19,6 +20,21 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 def signup(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        confirm_password = request.POST['confirm-password']
+
+        if password == confirm_password:
+            # Создаем нового пользователя
+            user = User.objects.create_user(username=username, password=password)
+            # Аутентифицируем пользователя сразу после регистрации
+            login(request, user)
+            return redirect('index')
+        else:
+            # Обработка ошибки, если пароли не совпадают
+            return render(request, 'registration.html', {'error_message': 'Пароли не совпадают'})
+
     return render(request, 'registration.html')
 
 def log_out(request):
