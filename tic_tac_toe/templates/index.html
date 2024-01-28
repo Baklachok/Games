@@ -3,8 +3,12 @@
 {% block content %}
 
     <main>
-        <p>Это простой HTML-шаблон.</p>
-        <p>Здесь вы можете добавить свой контент.</p>
+        <div class="tic-tac-toe-board">
+            {% for cell_value in board %}
+                 <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
+            {% endfor %}
+        </div>
+        <button class="play-button">Играть</button>
     </main>
 
 {% endblock content %}

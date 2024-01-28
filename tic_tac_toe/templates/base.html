@@ -5,13 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Мой веб-сайт{% endblock title %}</title>
+    <title>{% block title %}Крестики-нолики{% endblock title %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
 
     <header>
-        <h1>{% block header %}Добро пожаловать на мой веб-сайт!{% endblock header %}</h1>
+        <h1>{% block header %}Крестики-нолики{% endblock header %}</h1>
         {% if user.is_authenticated %}
             <a href="{% url 'logout' %}"><button class="login-button">Выход</button></a>
         {% else %}
@@ -23,7 +23,7 @@
     {% endblock content %}
 
     <footer>
-        <p>&copy; 2024 Мой веб-сайт. Все права защищены.</p>
+        <p>&copy; 2024 Крестики-нолики. Все права защищены.</p>
     </footer>
 
 </body>

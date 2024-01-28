@@ -5,7 +5,10 @@ from django.shortcuts import render, redirect
 
 
 def index(request):
-    return render(request, 'index.html')
+    board = ['X', 'O', 'X', 'O', 'X', 'X', 'O', '', 'O']
+
+    context = {'board': board}
+    return render(request, 'index.html', context)
 
 def login_view(request):
     if request.method == 'POST':
