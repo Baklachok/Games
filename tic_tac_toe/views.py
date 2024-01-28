@@ -14,6 +14,9 @@ def login_view(request):
             # Аутентификация пользователя
             login(request, form.get_user())
             return redirect('index')
+        else:
+            return render(request, 'login.html', {'error_message': 'Введены неверные данные'})
+
     else:
         form = AuthenticationForm()
 
@@ -24,6 +27,10 @@ def signup(request):
         username = request.POST['username']
         password = request.POST['password']
         confirm_password = request.POST['confirm-password']
+
+        # Проверяем уникальность имени пользователя
+        if User.objects.filter(username=username).exists():
+            return render(request, 'registration.html', {'error_message': 'Пользователь с таким именем уже существует'})
 
         if password == confirm_password:
             # Создаем нового пользователя
