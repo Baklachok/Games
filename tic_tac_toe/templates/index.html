@@ -5,10 +5,35 @@
     <main>
         <div class="tic-tac-toe-board">
             {% for cell_value in board %}
-                 <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
+                <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
             {% endfor %}
         </div>
         <button class="play-button">Играть</button>
     </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var cells = document.querySelectorAll('.cell');
+            cells.forEach(function(cell) {
+                cell.addEventListener('click', function() {
+                    if (!cell.classList.contains('non-clickable') && cell.innerText === '') {
+                        cell.innerText = 'O';
+                        cell.classList.add('non-clickable');
+
+                        // Проверка на выигрыш (замените условие на свою логику)
+                        if (checkWin()) {
+                            alert("Поздравляем. Вы выиграли!");
+                        }
+                    }
+                });
+            });
+
+            function checkWin() {
+                // Реализуйте вашу логику проверки на выигрыш
+                // В данном примере, просто возвращаем всегда true
+                return true;
+            }
+        });
+    </script>
 
 {% endblock content %}

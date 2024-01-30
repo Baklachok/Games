@@ -118,3 +118,8 @@ button {
     pointer-events: none;
     background-color: #ccc; /* Цвет фона для неактивной ячейки */
 }
+
+.tic-tac-toe-row {
+    display: flex;
+    gap: 5px;
+}
