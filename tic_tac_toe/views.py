@@ -50,3 +50,9 @@ def signup(request):
 def log_out(request):
     logout(request)
     return redirect('index')
+
+def tic_tae_toe(request):
+    board = ['', '', '', '', '', '', '', '', '']
+
+    context = {'board': board}
+    return render(request, 'tic-tae-toe.html', context)

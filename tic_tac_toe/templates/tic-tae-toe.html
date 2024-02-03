@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main>
+        <div class="tic-tac-toe-board">
+            {% for cell_value in board %}
+                <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var cells = document.querySelectorAll('.cell');
+            var gameOver = false; // Переменная, показывающая, завершилась ли игра
+            var isPlayerTurn = true; // Переменная, отслеживающая, чей ход
+
+            // Определение, чей ход первый
+            if (Math.random() < 0.5) {
+                isPlayerTurn = false; // Если меньше 0.5, компьютер ходит первым
+                computerMove();
+            }
+
+            cells.forEach(function(cell) {
+                cell.addEventListener('click', function() {
+                    if (!gameOver && isPlayerTurn && !cell.classList.contains('non-clickable') && cell.innerText === '') {
+                        cell.innerText = 'X';
+                        cell.classList.add('non-clickable');
+
+                        if (checkWin('X')) {
+                            alert("Поздравляем. Вы выиграли!");
+                            gameOver = true; // Устанавливаем флаг, что игра завершилась
+                            showPlayAgainButton();
+                        } else if (checkTie()) {
+                            alert("Ничья!");
+                            gameOver = true;
+                            showPlayAgainButton();
+                        } else {
+                            isPlayerTurn = false;
+                            computerMove();
+                        }
+                    }
+                });
+            });
+
+            function checkWin(player) {
+                var winConditions = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8],  // Горизонтальные линии
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8],  // Вертикальные линии
+                    [0, 4, 8], [2, 4, 6]              // Диагональные линии
+                ];
+
+                return winConditions.some(function(condition) {
+                    return condition.every(function(index) {
+                        return cells[index].innerText === player;
+                    });
+                });
+            }
+
+            function checkTie() {
+                return Array.from(cells).every(function(cell) {
+                    return cell.innerText !== '';
+                });
+            }
+
+            function computerMove() {
+                var emptyCells = Array.from(cells).filter(function(cell) {
+                    return cell.innerText === '';
+                });
+
+                var randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                randomCell.innerText = 'O';
+                randomCell.classList.add('non-clickable');
+
+                if (checkWin('O')) {
+                    alert("Компьютер выиграл!");
+                    gameOver = true; // Устанавливаем флаг, что игра завершилась
+                    showPlayAgainButton();
+                } else if (checkTie()) {
+                    alert("Ничья!");
+                    gameOver = true;
+                    showPlayAgainButton();
+                } else {
+                    isPlayerTurn = true;
+                }
+            }
+
+            function showPlayAgainButton() {
+                var playAgainButton = document.createElement('button');
+                playAgainButton.innerText = 'Сыграть еще';
+                playAgainButton.classList.add('play-again-button');
+                playAgainButton.addEventListener('click', function() {
+                    resetGame();
+                    playAgainButton.remove();
+                });
+                document.querySelector('main').appendChild(playAgainButton);
+            }
+
+            function resetGame() {
+                cells.forEach(function(cell) {
+                    cell.innerText = '';
+                    cell.classList.remove('non-clickable');
+                });
+
+                gameOver = false;
+
+                // Определение, чей ход первый в следующей игре
+                isPlayerTurn = Math.random() < 0.5;
+                if (!isPlayerTurn) {
+                    computerMove();
+                }
+            }
+        });
+    </script>
+
+    <style>
+        .play-again-button {
+            margin-top: 20px;
+        }
+    </style>
+
+{% endblock content %}
