@@ -11,9 +11,16 @@
 <body>
 
     <header>
-        <h1>{% block header %}Крестики-нолики{% endblock header %}</h1>
+        <div>
+            <h1>{% block header %}Крестики-нолики{% endblock header %}</h1>
+        </div>
         {% if user.is_authenticated %}
-            <a href="{% url 'logout' %}"><button class="login-button">Выход</button></a>
+            <div>
+                <a href="{% url 'logout' %}"><button class="login-button">Выход</button></a>
+                {% if block.super %}
+                    {{ block.super }}
+                {% endif %}
+            </div>
         {% else %}
             <a href="{% url 'login' %}"><button class="login-button">Вход</button></a>
         {% endif %}

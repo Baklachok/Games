@@ -1,7 +1,13 @@
 from django.contrib.auth import logout, login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+from tic_tac_toe.models import GameStats
 
 
 def index(request):
@@ -51,8 +57,33 @@ def log_out(request):
     logout(request)
     return redirect('index')
 
+@login_required
 def tic_tae_toe(request):
     board = ['', '', '', '', '', '', '', '', '']
 
     context = {'board': board}
+
     return render(request, 'tic-tae-toe.html', context)
+
+@csrf_exempt
+@login_required
+def update_stats(request):
+    result = request.GET.get('result', None)
+
+    if result:
+        stats, created = GameStats.objects.get_or_create(user=request.user)
+
+        if result == 'win':
+            stats.wins += 1
+        elif result == 'loss':
+            stats.losses += 1
+
+        stats.save()
+
+    return HttpResponse(status=200)
+
+@login_required
+def get_stats(request):
+    stats = GameStats.objects.get(user=request.user)
+    data = {'wins': stats.wins, 'losses': stats.losses}
+    return JsonResponse(data)

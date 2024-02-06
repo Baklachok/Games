@@ -1,3 +1,4 @@
+<!-- tic-tac-toe.html -->
 {% extends 'base.html' %}
 
 {% block content %}
@@ -31,11 +32,11 @@
                         if (checkWin('X')) {
                             alert("Поздравляем. Вы выиграли!");
                             gameOver = true; // Устанавливаем флаг, что игра завершилась
-                            showPlayAgainButton();
+                            showPlayAgainButton('win');
                         } else if (checkTie()) {
                             alert("Ничья!");
                             gameOver = true;
-                            showPlayAgainButton();
+                            showPlayAgainButton('tie');
                         } else {
                             isPlayerTurn = false;
                             computerMove();
@@ -76,17 +77,17 @@
                 if (checkWin('O')) {
                     alert("Компьютер выиграл!");
                     gameOver = true; // Устанавливаем флаг, что игра завершилась
-                    showPlayAgainButton();
+                    showPlayAgainButton('loss');
                 } else if (checkTie()) {
                     alert("Ничья!");
                     gameOver = true;
-                    showPlayAgainButton();
+                    showPlayAgainButton('tie');
                 } else {
                     isPlayerTurn = true;
                 }
             }
 
-            function showPlayAgainButton() {
+            function showPlayAgainButton(result) {
                 var playAgainButton = document.createElement('button');
                 playAgainButton.innerText = 'Сыграть еще';
                 playAgainButton.classList.add('play-again-button');
@@ -94,7 +95,11 @@
                     resetGame();
                     playAgainButton.remove();
                 });
+
                 document.querySelector('main').appendChild(playAgainButton);
+
+                // Отправка результата на сервер
+                fetch('/update_stats/?result=' + result, { method: 'POST' });
             }
 
             function resetGame() {
