@@ -17,9 +17,7 @@
         {% if user.is_authenticated %}
             <div>
                 <a href="{% url 'logout' %}"><button class="login-button">Выход</button></a>
-                {% if block.super %}
-                    {{ block.super }}
-                {% endif %}
+                <div id="stats-container"></div>
             </div>
         {% else %}
             <a href="{% url 'login' %}"><button class="login-button">Вход</button></a>
@@ -32,6 +30,27 @@
     <footer>
         <p>&copy; 2024 Крестики-нолики. Все права защищены.</p>
     </footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Функция для загрузки статистики побед и поражений
+        function loadStats() {
+            $.get('/get_stats/', function(data) {
+                // Отображение статистики в контейнере
+                $('#stats-container').html('Побед: ' + data.wins + ' | Поражений: ' + data.losses);
+            });
+        }
+
+        // Загрузка статистики при загрузке страницы
+        loadStats();
+
+        // Обновление статистики после выхода из системы
+        $('#logout-button').click(function() {
+            loadStats();
+        });
+    });
+</script>
 
 </body>
 </html>
