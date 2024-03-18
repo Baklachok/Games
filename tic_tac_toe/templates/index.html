@@ -9,9 +9,9 @@
             {% endfor %}
         </div>
         {% if user.is_authenticated %}
-            <a href="{% url 'tic-tae-toe' %}"><button class="play-button">Играть</button>
+            <a href="{% url 'tic-tae-toe' %}"><button class="play-button">Играть</button></a>
         {% else %}
-            <a href="{% url 'login' %}"><button class="play-button">Играть</button>
+            <a href="{% url 'login' %}"><button class="play-button">Войти</button></a>
         {% endif %}
     </main>
 

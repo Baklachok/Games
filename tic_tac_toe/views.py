@@ -87,3 +87,11 @@ def get_stats(request):
     stats = GameStats.objects.get(user=request.user)
     data = {'wins': stats.wins, 'losses': stats.losses}
     return JsonResponse(data)
+
+def all_stats(request):
+    # Получаем все объекты GameStats из базы данных
+    all_stats = GameStats.objects.all()
+
+    # Передаем данные в шаблон для отображения
+    context = {'all_stats': all_stats, 'user': request.user}
+    return render(request, 'all_stats.html', context)

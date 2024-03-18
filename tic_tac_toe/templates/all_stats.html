@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Статистика всех игроков
+{% endblock title %}
+
+{% block header %}
+    Статистика всех игроков
+{% endblock header %}
+
+{% block content %}
+    <table>
+        <thead>
+            <tr>
+                <th>Пользователь</th>
+                <th>Победы</th>
+                <th>Поражения</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stats in all_stats %}
+                <tr {% if user.is_authenticated and user.username == stats.user.username %}class="current-user"{% endif %}>
+                    <td>{{ stats.user.username }}</td>
+                    <td>{{ stats.wins }}</td>
+                    <td>{{ stats.losses }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
