@@ -1,13 +1,12 @@
 from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 
-from tic_tac_toe.models import GameStats
+from tic_tac_toe.models import GameStats, Game
 
 
 def index(request):
@@ -101,3 +100,15 @@ def all_stats(request):
     # Передаем данные в шаблон для отображения
     context = {'all_stats': all_stats, 'user': request.user}
     return render(request, 'all_stats.html', context)
+
+def start_game(request):
+    # Создание новой игры и отправка ID игры на клиент
+    game = Game.objects.create(...)
+    return JsonResponse({'game_id': game.id})
+
+def game_state(request, game_id):
+    # Получение состояния игры по ID
+    game = Game.objects.get(id=game_id)
+    # Формирование данных об игре для отправки на клиент
+    game_data = {...}
+    return JsonResponse(game_data)

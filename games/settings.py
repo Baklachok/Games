@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tic_tac_toe',
+    'daphne',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'games.wsgi.application'
+ASGI_APPLICATION = "games.asgi.application"
 
 
 # Database
