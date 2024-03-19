@@ -65,6 +65,12 @@ def tic_tae_toe(request):
 
     return render(request, 'tic-tae-toe.html', context)
 
+def play_with_human(request):
+    board = ['', '', '', '', '', '', '', '', '']
+
+    context = {'board': board}
+    return render(request, 'play_with_human.html', context)
+
 @csrf_exempt
 @login_required
 def update_stats(request):
