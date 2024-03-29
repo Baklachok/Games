@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
 from tic_tac_toe.models import GameStats, Game
@@ -103,7 +103,8 @@ def all_stats(request):
 
 def start_game(request):
     # Создание новой игры и отправка ID игры на клиент
-    game = Game.objects.create(...)
+    current_user = request.user
+    game = Game.objects.create(player1=current_user, player2=None)
     return JsonResponse({'game_id': game.id})
 
 def game_state(request, game_id):
@@ -112,3 +113,30 @@ def game_state(request, game_id):
     # Формирование данных об игре для отправки на клиент
     game_data = {...}
     return JsonResponse(game_data)
+
+@login_required
+def join_game(request, game_id):
+    game = get_object_or_404(Game, id=game_id, is_active=True, player2__isnull=True)
+    game.player2 = request.user
+    game.save()
+    return redirect('play_game', game_id=game_id)
+
+@login_required
+def play_game(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    # Дополнительная логика для отображения игрового поля и обработки ходов
+    context = {'game': game}
+    return render(request, 'play_with_human.html', context)
+
+def play_with_human(request):
+    return render(request, 'active_games.html')
+
+def create_game(request):
+    # Создаем новую игру
+    new_game = Game.objects.create(board='', player1=request.user, player2=None, is_active=True)
+
+    # Получаем ID созданной игры
+    game_id = new_game.id
+
+    # Возвращаем ответ с ID созданной игры
+    return JsonResponse({'game_id': game_id})

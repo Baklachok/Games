@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <main>
+        <h2>Активные игры</h2>
+        <!-- Отображение списка активных игр -->
+        <!-- Форма для создания новой игры -->
+        <form id="create-game-form" action="{% url 'create_game' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="play-button">Создать игру</button>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById("create-game-form").addEventListener("submit", function(event) {
+            event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+            fetch(this.action, {
+                method: this.method,
+                body: new FormData(this),
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Перенаправляем игрока на игровое поле новой игры
+                window.location.href = '/play-game/' + data.game_id + '/';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+{% endblock content %}
