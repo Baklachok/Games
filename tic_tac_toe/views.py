@@ -64,11 +64,11 @@ def tic_tae_toe(request):
 
     return render(request, 'tic-tae-toe.html', context)
 
-def play_with_human(request):
-    board = ['', '', '', '', '', '', '', '', '']
-
-    context = {'board': board}
-    return render(request, 'play_with_human.html', context)
+# def play_with_human(request):
+#     board = ['', '', '', '', '', '', '', '', '']
+#
+#     context = {'board': board}
+#     return render(request, 'play_with_human.html', context)
 
 @csrf_exempt
 @login_required
@@ -124,8 +124,9 @@ def join_game(request, game_id):
 @login_required
 def play_game(request, game_id):
     game = get_object_or_404(Game, id=game_id)
+    board = ['', '', '', '', '', '', '', '', '']
     # Дополнительная логика для отображения игрового поля и обработки ходов
-    context = {'game': game}
+    context = {'game': game, 'board': board}
     return render(request, 'play_with_human.html', context)
 
 def play_with_human(request):

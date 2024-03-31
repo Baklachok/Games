@@ -4,58 +4,65 @@
 {% block content %}
 
     <main>
+        <div class="player-turn">
+            <p>Ход игрока: <span id="current-player">{{ game.player1.username }}</span></p>
+        </div>
         <div class="tic-tac-toe-board">
             {% for cell_value in board %}
                 <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
             {% endfor %}
         </div>
-        <p>Ход игрока: {{ player }}</p>
     </main>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var cells = document.querySelectorAll('.cell');
-            var currentPlayer = '{{ player }}';
+        var cells = document.querySelectorAll('.cell');
+        var currentPlayer = '{{ game.player1.username }}'; // Используем имя игрока, сделавшего первый ход
+        var currentMarker = 'X'; // Устанавливаем маркер текущего игрока
 
-            cells.forEach(function(cell) {
-                cell.addEventListener('click', function() {
-                    if (!cell.classList.contains('non-clickable') && cell.innerText === '') {
-                        cell.innerText = currentPlayer;
-                        cell.classList.add('non-clickable');
+        document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
 
-                        // Проверка на выигрыш (замените условие на свою логику)
-                        if (checkWin(currentPlayer)) {
-                            alert("Поздравляем. Вы выиграли!");
-                        } else if (checkTie()) {
-                            alert("Ничья!");
-                        } else {
-                            // Смена игрока
-                            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-                        }
+        cells.forEach(function(cell) {
+            cell.addEventListener('click', function() {
+                if (!cell.classList.contains('non-clickable') && cell.innerText === '') {
+                    cell.innerText = currentMarker;
+                    cell.classList.add('non-clickable');
+
+                    // Проверка на выигрыш (замените условие на свою логику)
+                    if (checkWin(currentMarker)) {
+                        alert("Поздравляем. " + currentPlayer + " выиграл!");
+                    } else if (checkTie()) {
+                        alert("Ничья!");
+                    } else {
+                        // Смена игрока и маркера
+                        currentPlayer = currentPlayer === '{{ game.player1.username }}' ? '{{ game.player2.username }}' : '{{ game.player1.username }}';
+                        currentMarker = currentMarker === 'X' ? 'O' : 'X';
+                        document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
                     }
+                }
+            });
+        });
+
+        function checkWin(player) {
+            var winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],  // Горизонтальные линии
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],  // Вертикальные линии
+                [0, 4, 8], [2, 4, 6]              // Диагональные линии
+            ];
+
+            return winConditions.some(function(condition) {
+                return condition.every(function(index) {
+                    return cells[index].innerText === player;
                 });
             });
+        }
 
-            function checkWin(player) {
-                var winConditions = [
-                    [0, 1, 2], [3, 4, 5], [6, 7, 8],  // Горизонтальные линии
-                    [0, 3, 6], [1, 4, 7], [2, 5, 8],  // Вертикальные линии
-                    [0, 4, 8], [2, 4, 6]              // Диагональные линии
-                ];
-
-                return winConditions.some(function(condition) {
-                    return condition.every(function(index) {
-                        return cells[index].innerText === player;
-                    });
-                });
-            }
-
-            function checkTie() {
-                 return Array.from(cells).every(function(cell) {
-                    return cell.innerText !== '';
-                });
-            }
-        });
+        function checkTie() {
+             return Array.from(cells).every(function(cell) {
+                return cell.innerText !== '';
+            });
+        }
+    });
     </script>
 
 {% endblock content %}
