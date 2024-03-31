@@ -3,7 +3,11 @@
 {% block content %}
     <main>
         <h2>Активные игры</h2>
-        <!-- Отображение списка активных игр -->
+        <ul>
+            {% for game in active_games %}
+                <li><a href="{% url 'play_game' game.id %}">Игра #{{ game.id }}</a></li>
+            {% endfor %}
+        </ul>
         <!-- Форма для создания новой игры -->
         <form id="create-game-form" action="{% url 'create_game' %}" method="post">
             {% csrf_token %}

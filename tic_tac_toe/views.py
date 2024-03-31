@@ -130,7 +130,8 @@ def play_game(request, game_id):
     return render(request, 'play_with_human.html', context)
 
 def play_with_human(request):
-    return render(request, 'active_games.html')
+    active_games = Game.objects.filter(is_active=True)
+    return render(request, 'active_games.html', {'active_games': active_games})
 
 def create_game(request):
     # Создаем новую игру
