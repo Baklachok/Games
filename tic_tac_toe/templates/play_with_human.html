@@ -16,6 +16,26 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+        // Устанавливаем WebSocket-соединение для игрового поля
+        const gameId = '{{ game.id }}'; // Получите идентификатор игры из шаблона Django
+        const userId = '{{ user.id }}'; // Получите идентификатор пользователя из шаблона Django
+        const socket = new WebSocket(`ws://localhost:8000/ws/game/${gameId}/?user_id=${userId}`);
+
+        // Обработчики событий WebSocket
+        socket.onopen = function(event) {
+            console.log('WebSocket connection opened.');
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket connection closed.');
+        };
+
+        socket.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            console.log('Received message:', message);
+            // Дополнительная обработка сообщений, если необходимо
+        };
+
         var cells = document.querySelectorAll('.cell');
         var currentPlayer = '{{ game.player1.username }}'; // Используем имя игрока, сделавшего первый ход
         var currentMarker = 'X'; // Устанавливаем маркер текущего игрока
@@ -63,6 +83,6 @@
             });
         }
     });
-    </script>
+</script>
 
 {% endblock content %}

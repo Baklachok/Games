@@ -1,3 +1,4 @@
+from channels.db import database_sync_to_async
 from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -125,7 +126,6 @@ def join_game(request, game_id):
 def play_game(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     board = ['', '', '', '', '', '', '', '', '']
-    # Дополнительная логика для отображения игрового поля и обработки ходов
     context = {'game': game, 'board': board}
     return render(request, 'play_with_human.html', context)
 

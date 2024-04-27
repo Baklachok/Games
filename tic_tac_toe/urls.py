@@ -1,6 +1,6 @@
 from django.urls import path
 
-from tic_tac_toe import views
+from tic_tac_toe import views, consumers
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -16,4 +16,6 @@ urlpatterns = [
     path("play-game/<int:game_id>/", views.play_game, name="play_game"),
     path("play-with-human/", views.play_with_human, name="play-with-human"),
     path("create-game/", views.create_game, name="create_game"),
+    # Websocket URL pattern for the game consumer
+    path("ws/play-game/<int:game_id>/", consumers.GameConsumer.as_asgi()),
 ]
