@@ -3,22 +3,21 @@
 
 {% block content %}
 
-    <main>
-        <div class="player-turn">
-            <p>Ход игрока: <span id="current-player">{{ game.player1.username }}</span></p>
-        </div>
-        <div class="tic-tac-toe-board">
-            {% for cell_value in board %}
-                <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
-            {% endfor %}
-        </div>
-    </main>
+<main>
+    <div class="player-turn">
+        <p>Ход игрока: <span id="current-player">{{ game.player1.username }}</span></p>
+    </div>
+    <div class="tic-tac-toe-board">
+        {% for cell_value in board %}
+            <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
+        {% endfor %}
+    </div>
+</main>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-        // Устанавливаем WebSocket-соединение для игрового поля
-        const gameId = '{{ game.id }}'; // Получите идентификатор игры из шаблона Django
-        const userId = '{{ user.id }}'; // Получите идентификатор пользователя из шаблона Django
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const gameId = '{{ game.id }}'; // Получаем идентификатор игры из шаблона Django
+        const userId = '{{ user.id }}'; // Получаем идентификатор пользователя из шаблона Django
         const socket = new WebSocket(`ws://localhost:8000/ws/game/${gameId}/?user_id=${userId}`);
 
         // Обработчики событий WebSocket
@@ -33,12 +32,12 @@
         socket.onmessage = function(event) {
             const message = JSON.parse(event.data);
             console.log('Received message:', message);
-            // Дополнительная обработка сообщений, если необходимо
+            updateGame(message);
         };
 
-        var cells = document.querySelectorAll('.cell');
-        var currentPlayer = '{{ game.player1.username }}'; // Используем имя игрока, сделавшего первый ход
-        var currentMarker = 'X'; // Устанавливаем маркер текущего игрока
+        const cells = document.querySelectorAll('.cell');
+        let currentPlayer = '{{ game.player1.username }}'; // Используем имя игрока, сделавшего первый ход
+        let currentMarker = 'X'; // Устанавливаем маркер текущего игрока
 
         document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
 
@@ -48,13 +47,13 @@
                     cell.innerText = currentMarker;
                     cell.classList.add('non-clickable');
 
-                    // Проверка на выигрыш (замените условие на свою логику)
+                    socket.send(JSON.stringify({ position: Array.from(cells).indexOf(cell) }));
+
                     if (checkWin(currentMarker)) {
                         alert("Поздравляем. " + currentPlayer + " выиграл!");
                     } else if (checkTie()) {
                         alert("Ничья!");
                     } else {
-                        // Смена игрока и маркера
                         currentPlayer = currentPlayer === '{{ game.player1.username }}' ? '{{ game.player2.username }}' : '{{ game.player1.username }}';
                         currentMarker = currentMarker === 'X' ? 'O' : 'X';
                         document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
@@ -64,7 +63,7 @@
         });
 
         function checkWin(player) {
-            var winConditions = [
+            const winConditions = [
                 [0, 1, 2], [3, 4, 5], [6, 7, 8],  // Горизонтальные линии
                 [0, 3, 6], [1, 4, 7], [2, 5, 8],  // Вертикальные линии
                 [0, 4, 8], [2, 4, 6]              // Диагональные линии
@@ -78,9 +77,32 @@
         }
 
         function checkTie() {
-             return Array.from(cells).every(function(cell) {
+            return Array.from(cells).every(function(cell) {
                 return cell.innerText !== '';
             });
+        }
+
+        function updateGame(message) {
+            const position = message.data.position;
+            const marker = currentMarker === 'X' ? 'O' : 'X';
+            const opponentMarker = currentMarker === 'X' ? 'O' : 'X';
+
+            if (position !== undefined) {
+                cells[position].innerText = opponentMarker;
+                cells[position].classList.add('non-clickable');
+
+                if (checkWin(opponentMarker)) {
+                    alert("К сожалению, ваш оппонент выиграл!");
+                } else if (checkTie()) {
+                    alert("Ничья!");
+                } else {
+                    currentPlayer = currentPlayer === '{{ game.player1.username }}' ? '{{ game.player2.username }}' : '{{ game.player1.username }}';
+                    currentMarker = currentMarker === 'X' ? 'O' : 'X';
+                    document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
+                }
+            } else {
+                console.error('Invalid position received:', position);
+            }
         }
     });
 </script>

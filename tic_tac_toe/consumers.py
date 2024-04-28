@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 
-from tic_tac_toe.models import Game
+from tic_tac_toe.models import Move
 
 
 class GameConsumer(AsyncWebsocketConsumer):
@@ -50,15 +50,27 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        # Process received data, e.g., move made by the player
-        await self.channel_layer.group_send(
-            self.game_group_name,
-            {
-                'type': 'game_update',
-                'data': data,
-                'player_id': self.player.id
-            }
-        )
+        move_position = data.get('position')
+        if move_position is not None:
+            if 0 <= move_position < 9:
+                # Асинхронно сохраняем ход в базу данных
+                await self.save_move(move_position)
+                # Отправляем сообщение о ходе всем игрокам в группе
+                await self.channel_layer.group_send(
+                    self.game_group_name,
+                    {
+                        'type': 'game_update',
+                        'data': data,
+                        'player_id': self.player.id
+                    }
+                )
+            else:
+                print('Invalid move position:', move_position)
+
+    @sync_to_async
+    def save_move(self, move_position):
+        # Синхронная операция сохранения хода в базу данных
+        Move.objects.create(game_id=self.game_id, player=self.player, position=move_position)
 
     async def player_join(self, event):
         # Handle player join event
@@ -78,6 +90,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             'player_id': player_id
         }))
 
+
     async def game_update(self, event):
         # Handle game update event
         data = event['data']
@@ -95,3 +108,4 @@ class GameConsumer(AsyncWebsocketConsumer):
             return user
         except User.DoesNotExist:
             return None
+
