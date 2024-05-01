@@ -4,8 +4,9 @@
 {% block content %}
 
 <main>
+
     <div class="player-turn">
-        <p>Ход игрока: <span id="current-player">{{ game.player1.username }}</span></p>
+        <p>Ход игрока: <span id="current-player">{{ game.player1.username }} (X)</span></p>
     </div>
     <div class="tic-tac-toe-board">
         {% for cell_value in board %}
@@ -37,26 +38,24 @@
 
         const cells = document.querySelectorAll('.cell');
         let currentPlayer = '{{ game.player1.username }}'; // Используем имя игрока, сделавшего первый ход
-        let currentMarker = 'X'; // Устанавливаем маркер текущего игрока
 
-        document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
+        document.getElementById('current-player').innerText = currentPlayer + ' (X)';
 
         cells.forEach(function(cell) {
             cell.addEventListener('click', function() {
                 if (!cell.classList.contains('non-clickable') && cell.innerText === '') {
-                    cell.innerText = currentMarker;
+                    cell.innerText = 'X'; // Поставим крестик для текущего игрока
                     cell.classList.add('non-clickable');
 
                     socket.send(JSON.stringify({ position: Array.from(cells).indexOf(cell) }));
 
-                    if (checkWin(currentMarker)) {
+                    if (checkWin('X')) {
                         alert("Поздравляем. " + currentPlayer + " выиграл!");
                     } else if (checkTie()) {
                         alert("Ничья!");
                     } else {
-                        currentPlayer = currentPlayer === '{{ game.player1.username }}' ? '{{ game.player2.username }}' : '{{ game.player1.username }}';
-                        currentMarker = currentMarker === 'X' ? 'O' : 'X';
-                        document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
+                        currentPlayer = '{{ game.player2.username }}'; // Переключим текущего игрока на первого игрока
+                        document.getElementById('current-player').innerText = currentPlayer + ' (O)'; // Обновим отображение текущего игрока
                     }
                 }
             });
@@ -84,21 +83,20 @@
 
         function updateGame(message) {
             const position = message.data.position;
-            const marker = currentMarker === 'X' ? 'O' : 'X';
-            const opponentMarker = currentMarker === 'X' ? 'O' : 'X';
 
             if (position !== undefined) {
-                cells[position].innerText = opponentMarker;
+                const marker = currentPlayer === '{{ game.player1.username }}' ? 'O' : 'X'; // Определим знак для текущего игрока
+
+                cells[position].innerText = marker;
                 cells[position].classList.add('non-clickable');
 
-                if (checkWin(opponentMarker)) {
-                    alert("К сожалению, ваш оппонент выиграл!");
+                if (checkWin(marker)) {
+                    alert("Поздравляем. " + currentPlayer + " выиграл!");
                 } else if (checkTie()) {
                     alert("Ничья!");
                 } else {
-                    currentPlayer = currentPlayer === '{{ game.player1.username }}' ? '{{ game.player2.username }}' : '{{ game.player1.username }}';
-                    currentMarker = currentMarker === 'X' ? 'O' : 'X';
-                    document.getElementById('current-player').innerText = currentPlayer + ' (' + currentMarker + ')';
+                    currentPlayer = '{{ game.player1.username }}'; // Переключим текущего игрока на второго игрока
+                    document.getElementById('current-player').innerText = currentPlayer + ' (O)'; // Обновим отображение текущего игрока
                 }
             } else {
                 console.error('Invalid position received:', position);

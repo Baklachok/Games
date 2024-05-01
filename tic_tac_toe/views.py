@@ -124,8 +124,11 @@ def join_game(request, game_id):
 @login_required
 def play_game(request, game_id):
     game = get_object_or_404(Game, id=game_id)
+    current_user = request.user
+
     board = ['', '', '', '', '', '', '', '', '']
-    context = {'game': game, 'board': board}
+
+    context = {'game': game, 'user': current_user, 'board': board}
     return render(request, 'play_with_human.html', context)
 
 def play_with_human(request):
