@@ -13,7 +13,12 @@
             <div class="cell {% if cell_value %}non-clickable{% endif %}" data-value="{{ cell_value }}">{{ cell_value }}</div>
         {% endfor %}
     </div>
+
+    <!-- Элемент для отображения сообщений о подключении и отключении игроков -->
+    <div id="player-status"></div>
+
 </main>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -34,6 +39,13 @@
             const message = JSON.parse(event.data);
             console.log('Received message:', message);
             updateGame(message);
+
+            // Обновляем сообщения о подключении и отключении игроков
+            if (message.type === 'player_join') {
+                document.getElementById('player-status').innerText = 'Игрок подключился';
+            } else if (message.type === 'player_leave') {
+                document.getElementById('player-status').innerText = 'Игрок отключился';
+            }
         };
 
         const cells = document.querySelectorAll('.cell');
