@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
-from tic_tac_toe.models import GameStats, Game
+from tic_tac_toe.models import GameStats, Game, Move
 
 
 def index(request):
@@ -107,12 +107,22 @@ def start_game(request):
     game = Game.objects.create(player1=current_user, player2=None)
     return JsonResponse({'game_id': game.id})
 
+
 def game_state(request, game_id):
-    # Получение состояния игры по ID
-    game = Game.objects.get(id=game_id)
-    # Формирование данных об игре для отправки на клиент
-    game_data = {...}
-    return JsonResponse(game_data)
+    try:
+        # Получаем состояние доски из объекта игры
+        game = Game.objects.get(id=game_id)
+        board = game.board
+
+        # Получаем все ходы для данной игры
+        moves = Move.objects.filter(game=game)
+        moves_list = [{'player': move.player.username, 'position': move.position} for move in moves]
+
+        # Возвращаем состояние игры в формате JSON
+        return JsonResponse({'board': board, 'moves': moves_list})
+    except Game.DoesNotExist:
+        # Если игра с указанным ID не найдена, возвращаем ошибку 404
+        return JsonResponse({'error': 'Game not found'}, status=404)
 
 @login_required
 def join_game(request, game_id):
@@ -144,3 +154,32 @@ def create_game(request):
 
     # Возвращаем ответ с ID созданной игры
     return JsonResponse({'game_id': game_id})
+
+
+@csrf_exempt
+@login_required
+def update_game(request):
+    if request.method == 'POST':
+        position = request.POST.get('position')
+        game_id = request.POST.get('game_id')
+
+        if position is not None and game_id is not None:
+            try:
+                # Получаем игру из базы данных
+                game = Game.objects.get(id=game_id)
+
+                # Создаем объект хода и сохраняем его в базе данных
+                move = Move.objects.create(game=game, player=request.user, position=position)
+
+                # Обновляем состояние доски игры
+                game.board = request.POST.get('board')
+                game.save()
+
+                return HttpResponse(status=200)
+            except Game.DoesNotExist:
+                return JsonResponse({'error': 'Game not found'}, status=404)
+        else:
+            return HttpResponse(status=400)
+    else:
+        return HttpResponse(status=405)
+
