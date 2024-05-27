@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 
-from tic_tac_toe.models import Move
+from tic_tac_toe.models import Move, Game
 
 
 class GameConsumer(AsyncWebsocketConsumer):
@@ -31,6 +31,24 @@ class GameConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    async def player_join(self, event):
+        player_id = event['player_id']
+
+        # Update the game with the second player if needed
+        await self.update_game_with_player2(player_id)
+
+        # Send appropriate message to the client
+        await self.send(text_data=json.dumps({
+            'type': 'player_join',
+            'player_id': player_id
+        }))
+
+    @sync_to_async
+    def update_game_with_player2(self, player_id):
+        game = Game.objects.get(id=self.game_id)
+        if game.player2 is None and game.player1_id != player_id:
+            game.player2_id = player_id
+            game.save()
 
     async def disconnect(self, close_code):
         # Leave game group
@@ -71,15 +89,6 @@ class GameConsumer(AsyncWebsocketConsumer):
     def save_move(self, move_position):
         # Синхронная операция сохранения хода в базу данных
         Move.objects.create(game_id=self.game_id, player=self.player, position=move_position)
-
-    async def player_join(self, event):
-        # Handle player join event
-        player_id = event['player_id']
-        # Send appropriate message to the client
-        await self.send(text_data=json.dumps({
-            'type': 'player_join',
-            'player_id': player_id
-        }))
 
     async def player_leave(self, event):
         # Handle player leave event

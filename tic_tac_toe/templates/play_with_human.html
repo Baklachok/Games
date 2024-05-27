@@ -24,7 +24,13 @@
     document.addEventListener("DOMContentLoaded", function() {
         const gameId = '{{ game.id }}'; // Получаем идентификатор игры из шаблона Django
         const userId = '{{ user.id }}'; // Получаем идентификатор пользователя из шаблона Django
+        const player1Username = '{{ game.player1.username }}';
+        const player2Username = '{{ game.player2.username }}';
         const socket = new WebSocket(`ws://localhost:8000/ws/game/${gameId}/?user_id=${userId}`);
+
+        const cells = document.querySelectorAll('.cell');
+        let currentPlayer = '{{ game.current_player.username }}';
+        document.getElementById('current-player').innerText = `${currentPlayer} (${currentPlayer === player1Username ? 'X' : 'O'})`;
 
         // Обработчики событий WebSocket
         socket.onopen = function(event) {
@@ -40,7 +46,6 @@
             console.log('Received message:', message);
             updateGame(message);
 
-            // Обновляем сообщения о подключении и отключении игроков
             if (message.type === 'player_join') {
                 document.getElementById('player-status').innerText = 'Игрок подключился';
             } else if (message.type === 'player_leave') {
@@ -48,28 +53,23 @@
             }
         };
 
-        const cells = document.querySelectorAll('.cell');
-        let currentPlayer = '{{ game.player1.username }}'; // Используем имя игрока, сделавшего первый ход
-
-        document.getElementById('current-player').innerText = currentPlayer + ' (X)';
-
         cells.forEach(function(cell) {
             cell.addEventListener('click', function() {
                 if (!cell.classList.contains('non-clickable') && cell.innerText === '') {
-                    const marker = currentPlayer === '{{ game.player1.username }}' ? 'X' : 'O';
+                    const marker = currentPlayer === player1Username ? 'X' : 'O';
                     cell.innerText = marker;
                     cell.classList.add('non-clickable');
 
                     const position = Array.from(cells).indexOf(cell);
                     updateGameOnServer(position);
 
-                    if (checkWin('X')) {
+                    if (checkWin(marker)) {
                         alert("Поздравляем. " + currentPlayer + " выиграл!");
                     } else if (checkTie()) {
                         alert("Ничья!");
                     } else {
-                        currentPlayer = '{{ game.player2.username }}'; // Переключим текущего игрока на первого игрока
-                        document.getElementById('current-player').innerText = currentPlayer + ' (O)'; // Обновим отображение текущего игрока
+                        currentPlayer = currentPlayer === player1Username ? player2Username : player1Username;
+                        document.getElementById('current-player').innerText = `${currentPlayer} (${marker === 'X' ? 'O' : 'X'})`;
                     }
                 }
             });
@@ -81,10 +81,6 @@
                 position: position
             };
             socket.send(JSON.stringify(message));
-        }
-
-        function getBoardState() {
-            return Array.from(cells).map(cell => cell.innerText).join('');
         }
 
         function checkWin(player) {
@@ -116,13 +112,15 @@
                 cells[position].innerText = marker;
                 cells[position].classList.add('non-clickable');
 
-                if (checkWin(marker)) {
-                    alert("Поздравляем. " + currentPlayer + " выиграл!");
+                if (checkWin('X')) {
+                    alert("Поздравляем. " + player1Username + " выиграл!");
+                } else if (checkWin('O')) {
+                    alert("Поздравляем. " + player2Username + " выиграл!");
                 } else if (checkTie()) {
                     alert("Ничья!");
                 } else {
-                    currentPlayer = '{{ game.player1.username }}'; // Переключим текущего игрока на второго игрока
-                    document.getElementById('current-player').innerText = currentPlayer + ' (O)'; // Обновим отображение текущего игрока
+                    currentPlayer = '{{ game.player1.username }}';; // Переключим текущего игрока на второго игрока
+                    document.getElementById('current-player').innerText = `${currentPlayer} (${marker === 'X' ? 'O' : 'X'})`;
                 }
             } else {
                 console.error('Invalid position received:', position);
@@ -136,19 +134,19 @@
                     // Обновляем состояние игрового поля на основе полученных данных
                     data.moves.forEach(move => {
                         const position = move.position;
-                        const marker = move.player === '{{ game.player1.username }}' ? 'X' : 'O'; // Определяем знак для текущего игрока
+                        const marker = move.player === player1Username ? 'X' : 'O';
 
                         cells[position].innerText = marker;
                         cells[position].classList.add('non-clickable');
                     });
 
                     // Проверяем состояние игры на наличие победителя или ничью
-                    if (checkWin('X')) {
-                        alert("Поздравляем. " + currentPlayer + " выиграл!");
+                     if (checkWin('X')) {
+                        alert("Поздравляем. " + player1Username + " выиграл!");
+                    } else if (checkWin('O')) {
+                        alert("Поздравляем. " + player2Username + " выиграл!");
                     } else if (checkTie()) {
                         alert("Ничья!");
-                    } else {
-                        // Продолжаем игру
                     }
                 })
                 .catch(error => {

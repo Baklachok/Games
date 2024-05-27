@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -8,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from tic_tac_toe.models import GameStats, Game, Move
 
+
+logger = logging.getLogger(__name__)
 
 def index(request):
     board = ['X', 'O', 'X', 'O', 'X', 'X', 'O', '', 'O']
@@ -63,12 +67,6 @@ def tic_tae_toe(request):
     context = {'board': board}
 
     return render(request, 'tic-tae-toe.html', context)
-
-# def play_with_human(request):
-#     board = ['', '', '', '', '', '', '', '', '']
-#
-#     context = {'board': board}
-#     return render(request, 'play_with_human.html', context)
 
 @csrf_exempt
 @login_required
@@ -126,9 +124,13 @@ def game_state(request, game_id):
 
 @login_required
 def join_game(request, game_id):
-    game = get_object_or_404(Game, id=game_id, is_active=True, player2__isnull=True)
-    game.player2 = request.user
-    game.save()
+    game = get_object_or_404(Game, id=game_id)
+    current_user = request.user
+
+    if game.player2 is None and current_user != game.player1:
+        game.player2 = current_user
+        game.save()
+
     return redirect('play_game', game_id=game_id)
 
 @login_required
@@ -141,19 +143,35 @@ def play_game(request, game_id):
     context = {'game': game, 'user': current_user, 'board': board}
     return render(request, 'play_with_human.html', context)
 
-def play_with_human(request):
-    active_games = Game.objects.filter(is_active=True)
-    return render(request, 'active_games.html', {'active_games': active_games})
-
+@login_required
 def create_game(request):
-    # Создаем новую игру
-    new_game = Game.objects.create(board='', player1=request.user, player2=None, is_active=True)
+    if request.method == 'POST':
+        try:
+            # Создаем новую игру
+            new_game = Game.objects.create(board=' ' * 9, player1=request.user, is_active=True,
+                                           current_player=request.user)
+            # Получаем ID созданной игры
+            game_id = new_game.id
+            # Возвращаем ответ с ID созданной игры
+            return JsonResponse({'game_id': game_id})
+        except Exception as e:
+            logger.error("Ошибка при создании игры: %s", str(e))
+            return JsonResponse({'error': 'Ошибка при создании игры'}, status=500)
+    else:
+        logger.warning("Недопустимый метод запроса: %s", request.method)
+        return HttpResponse(status=405)
 
-    # Получаем ID созданной игры
-    game_id = new_game.id
-
-    # Возвращаем ответ с ID созданной игры
-    return JsonResponse({'game_id': game_id})
+@login_required
+def play_with_human(request):
+    try:
+        active_games = Game.objects.filter(is_active=True)
+        logger.debug("Найдено %d активных игр", active_games.count())
+        for game in active_games:
+            logger.debug("Игра ID: %d, Игрок 1: %s, Игрок 2: %s", game.id, game.player1.username, game.player2.username if game.player2 else 'None')
+        return render(request, 'active_games.html', {'active_games': active_games})
+    except Exception as e:
+        logger.error("Ошибка при получении активных игр: %s", str(e))
+        return JsonResponse({'error': 'Ошибка при получении активных игр'}, status=500)
 
 
 @csrf_exempt
@@ -162,6 +180,7 @@ def update_game(request):
     if request.method == 'POST':
         position = request.POST.get('position')
         game_id = request.POST.get('game_id')
+        current_player = request.user
 
         if position is not None and game_id is not None:
             try:
@@ -169,10 +188,11 @@ def update_game(request):
                 game = Game.objects.get(id=game_id)
 
                 # Создаем объект хода и сохраняем его в базе данных
-                move = Move.objects.create(game=game, player=request.user, position=position)
+                move = Move.objects.create(game=game, player=current_player, position=position)
 
                 # Обновляем состояние доски игры
                 game.board = request.POST.get('board')
+                game.current_player = game.player1 if current_player == game.player2 else game.player2
                 game.save()
 
                 return HttpResponse(status=200)

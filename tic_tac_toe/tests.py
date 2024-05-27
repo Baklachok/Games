@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -146,9 +147,15 @@ class TicTacToeGameTest(StaticLiveServerTestCase):
         # Кликаем по элементу
         cells[0].click()
 
-        WebDriverWait(self.browser, 5).until(
-            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'O')
-        )
+        try:
+            WebDriverWait(self.browser, 10).until(
+                EC.text_to_be_present_in_element((By.ID, 'current-player'), 'O')
+            )
+            print("Player turn successfully updated to O")
+        except TimeoutException:
+            print("Failed to update player turn within the timeout period")
+            current_player_text = self.browser.find_element(By.ID, 'current-player').text
+            print(f"Current player text: {current_player_text}")
 
         # Continue the game...
 

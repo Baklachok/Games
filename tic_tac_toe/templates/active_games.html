@@ -1,39 +1,52 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <main>
-        <h2>Активные игры</h2>
+<main>
+    <h2>Активные игры</h2>
+    {% if active_games %}
         <ul>
             {% for game in active_games %}
-                <li><a href="{% url 'play_game' game.id %}">Игра #{{ game.id }}</a></li>
+                <li>
+                    <a href="{% url 'play_game' game.id %}">Игра #{{ game.id }}</a>
+                    (Игрок 1: {{ game.player1.username }},
+                    Игрок 2: {% if game.player2 %}{{ game.player2.username }}{% else %}Нет{% endif %})
+                </li>
             {% endfor %}
         </ul>
-        <!-- Форма для создания новой игры -->
-        <form id="create-game-form" action="{% url 'create_game' %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="play-button">Создать игру</button>
-        </form>
-    </main>
+    {% else %}
+        <p>Нет активных игр.</p>
+    {% endif %}
+    <!-- Форма для создания новой игры -->
+    <form id="create-game-form" action="{% url 'create_game' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="play-button">Создать игру</button>
+    </form>
+</main>
 
-    <script>
-        document.getElementById("create-game-form").addEventListener("submit", function(event) {
-            event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+<script>
+    document.getElementById("create-game-form").addEventListener("submit", function(event) {
+        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
 
-            fetch(this.action, {
-                method: this.method,
-                body: new FormData(this),
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
+        fetch(this.action, {
+            method: this.method,
+            body: new FormData(this),
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.game_id) {
+                console.log('Создана новая игра с ID:', data.game_id);
                 // Перенаправляем игрока на игровое поле новой игры
                 window.location.href = '/play-game/' + data.game_id + '/';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            } else {
+                console.error('Не удалось создать игру:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
         });
-    </script>
+    });
+</script>
 {% endblock content %}
