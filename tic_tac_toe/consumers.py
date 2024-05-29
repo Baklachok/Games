@@ -90,6 +90,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Синхронная операция сохранения хода в базу данных
         Move.objects.create(game_id=self.game_id, player=self.player, position=move_position)
 
+        game = Game.objects.get(id=self.game_id)
+        game.current_player = game.player1 if self.player == game.player2 else game.player2
+        game.save()
+
     async def player_leave(self, event):
         # Handle player leave event
         player_id = event['player_id']

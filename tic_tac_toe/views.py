@@ -195,7 +195,12 @@ def update_game(request):
                 game.current_player = game.player1 if current_player == game.player2 else game.player2
                 game.save()
 
-                return HttpResponse(status=200)
+                return JsonResponse({
+                    'board': game.board,
+                    'current_player': game.current_player.username,
+                    'moves': [{'player': move.player.username, 'position': move.position} for move in
+                              Move.objects.filter(game=game)]
+                })
             except Game.DoesNotExist:
                 return JsonResponse({'error': 'Game not found'}, status=404)
         else:
