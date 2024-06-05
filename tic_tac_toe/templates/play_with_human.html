@@ -30,7 +30,7 @@
 
         const cells = document.querySelectorAll('.cell');
         let currentPlayer = '{{ game.current_player.username }}';
-        document.getElementById('current-player').innerText = `${currentPlayer} (${currentPlayer === player1Username ? 'X' : 'O'})`;
+        updateCurrentPlayerDisplay();
 
         // Обработчики событий WebSocket
         socket.onopen = function(event) {
@@ -68,8 +68,7 @@
                     } else if (checkTie()) {
                         alert("Ничья!");
                     } else {
-                        currentPlayer = currentPlayer === player1Username ? player2Username : player1Username;
-                        document.getElementById('current-player').innerText = `${currentPlayer} (${marker === 'X' ? 'O' : 'X'})`;
+                        updateCurrentPlayerDisplay();
                     }
                 }
             });
@@ -119,12 +118,16 @@
                 } else if (checkTie()) {
                     alert("Ничья!");
                 } else {
-                    currentPlayer = '{{ game.player1.username }}';; // Переключим текущего игрока на второго игрока
-                    document.getElementById('current-player').innerText = `${currentPlayer} (${marker === 'X' ? 'O' : 'X'})`;
+                    currentPlayer = message.data.current_player;
+                    updateCurrentPlayerDisplay();
                 }
             } else {
                 console.error('Invalid position received:', position);
             }
+        }
+
+        function updateCurrentPlayerDisplay() {
+            document.getElementById('current-player').innerText = `${currentPlayer} (${currentPlayer === player1Username ? 'X' : 'O'})`;
         }
 
         function updateGameState() {

@@ -1,6 +1,7 @@
 import json
 
 from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 
@@ -78,7 +79,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                     self.game_group_name,
                     {
                         'type': 'game_update',
-                        'data': data,
+                        'data': {
+                            'current_player': await self.get_current_player_username(),
+                            'position': move_position,
+                        },
                         'player_id': self.player.id
                     }
                 )
@@ -122,3 +126,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         except User.DoesNotExist:
             return None
 
+    @database_sync_to_async
+    def get_current_player_username(self):
+        game = Game.objects.get(id=self.game_id)
+        return game.current_player.username

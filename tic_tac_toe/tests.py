@@ -198,7 +198,7 @@ class TicTacToeGameTest(StaticLiveServerTestCase):
         )
 
         WebDriverWait(second_browser, 10).until(
-            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'X')
+            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'O')
         )
 
         WebDriverWait(self.browser, 10).until(
@@ -216,7 +216,7 @@ class TicTacToeGameTest(StaticLiveServerTestCase):
         cells[1].click()
 
         WebDriverWait(second_browser, 10).until(
-            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'X')
+            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'O')
         )
 
         # Close the second browser
