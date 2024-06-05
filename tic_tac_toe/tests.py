@@ -159,37 +159,69 @@ class TicTacToeGameTest(StaticLiveServerTestCase):
 
         # Continue the game...
 
-    # def test_player_join_leave(self):
-    #     print("Step 1: First player login")
-    #     self.browser.get(self.live_server_url + '/login/')  # Redirect to the login page
-    #     self.browser.find_element(By.NAME,"username").send_keys('root')
-    #     self.browser.find_element(By.NAME, "password").send_keys('1234')
-    #     self.browser.find_element(By.XPATH, '//button[@type="submit"]').click()
-    #
-    #     # Create a new browser instance for the second player
-    #     print("Step 2: Second player login")
-    #     second_browser = webdriver.Firefox()
-    #     second_browser.get(self.live_server_url + '/login/') # Redirect to the login page
-    #     second_browser.find_element(By.NAME, "username").send_keys('root2')
-    #     second_browser.find_element(By.NAME, "password").send_keys('1234')
-    #     second_browser.find_element(By.XPATH, '//button[@type="submit"]').click()
-    #     second_browser.get(self.live_server_url + '/play-game/1/')
-    #
-    #     # Wait for the page to load
-    #     WebDriverWait(second_browser, 10).until(
-    #         EC.presence_of_element_located((By.CLASS_NAME, 'tic-tac-toe-board'))
-    #     )
-    #
-    #     # Check that the player joined message is displayed
-    #     player_join_message_second_browser = WebDriverWait(second_browser, 5).until(
-    #         EC.text_to_be_present_in_element((By.ID, 'messages'), 'Player joined the game.')
-    #     )
-    #
-    #     # Close the second browser
-    #     second_browser.quit()
-    #
-    #     # Wait for the player leave message to be displayed
-    #     player_leave_message = WebDriverWait(self.browser, 5).until(
-    #         EC.text_to_be_present_in_element((By.ID, 'messages'), 'Player left the game.')
-    #     )
+    def test_player_join_leave(self):
+        print("Step 1: First player login")
+        self.browser.get(self.live_server_url + '/login/')  # Redirect to the login page
+        self.browser.find_element(By.NAME,"username").send_keys('root')
+        self.browser.find_element(By.NAME, "password").send_keys('1234')
+        self.browser.find_element(By.XPATH, '//button[@type="submit"]').click()
+        self.browser.get(self.live_server_url + '/play-with-human/')
+        game_id = self.browser.execute_script(
+            "return fetch('/create-game/', {method: 'POST', body: new FormData(document.getElementById('create-game-form')), headers: {'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value}}).then(res => res.json());")[
+            'game_id']
+        self.browser.get(self.live_server_url + f'/join-game/{game_id}/')
 
+
+
+        # Create a new browser instance for the second player
+        print("Step 2: Second player login")
+        second_browser = webdriver.Firefox()
+        second_browser.get(self.live_server_url + '/login/') # Redirect to the login page
+        second_browser.find_element(By.NAME, "username").send_keys('root2')
+        second_browser.find_element(By.NAME, "password").send_keys('1234')
+        second_browser.find_element(By.XPATH, '//button[@type="submit"]').click()
+        second_browser.get(self.live_server_url + f'/join-game/{game_id}/')
+
+        cells = self.browser.find_elements(By.CLASS_NAME, 'cell')
+
+        # Ждем, пока элемент станет кликабельным
+        WebDriverWait(self.browser, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'cell'))
+        )
+
+        # Кликаем по элементу
+        cells[0].click()
+
+        # Wait for the page to load
+        WebDriverWait(second_browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'tic-tac-toe-board'))
+        )
+
+        WebDriverWait(second_browser, 10).until(
+            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'X')
+        )
+
+        WebDriverWait(self.browser, 10).until(
+            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'O')
+        )
+
+        cells = second_browser.find_elements(By.CLASS_NAME, 'cell')
+
+        # Ждем, пока элемент станет кликабельным
+        WebDriverWait(second_browser, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'cell'))
+        )
+
+        # Кликаем по элементу
+        cells[1].click()
+
+        WebDriverWait(second_browser, 10).until(
+            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'X')
+        )
+
+        # Close the second browser
+        second_browser.quit()
+
+        WebDriverWait(self.browser, 10).until(
+            EC.text_to_be_present_in_element((By.ID, 'current-player'), 'O')
+        )
