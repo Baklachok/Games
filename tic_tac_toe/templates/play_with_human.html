@@ -106,7 +106,7 @@
             const position = message.data.position;
 
             if (position !== undefined) {
-                const marker = currentPlayer === '{{ game.player1.username }}' ? 'O' : 'X'; // Определим знак для текущего игрока
+                const marker = currentPlayer === '{{ game.player1.username }}' ? 'X' : 'O'; // Определим знак для текущего игрока
 
                 cells[position].innerText = marker;
                 cells[position].classList.add('non-clickable');
