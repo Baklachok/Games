@@ -89,6 +89,22 @@ class GameConsumer(AsyncWebsocketConsumer):
             else:
                 print('Invalid move position:', move_position)
 
+        if await self.check_game_end():
+            await self.mark_game_inactive()
+            await self.channel_layer.group_send(
+                self.game_group_name,
+                {
+                    'type': 'game_end',
+                    'message': 'Game has ended'
+                }
+            )
+
+    async def game_end(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'game_end',
+            'message': event['message']
+        }))
+
     @sync_to_async
     def save_move(self, move_position):
         # Синхронная операция сохранения хода в базу данных
@@ -96,6 +112,26 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         game = Game.objects.get(id=self.game_id)
         game.current_player = game.player1 if self.player == game.player2 else game.player2
+        game.save()
+
+    @database_sync_to_async
+    def check_game_end(self):
+        game = Game.objects.get(id=self.game_id)
+        cells = list(game.board)
+        win_conditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ]
+        for condition in win_conditions:
+            if cells[condition[0]] == cells[condition[1]] == cells[condition[2]] and cells[condition[0]] != ' ':
+                return True
+        return all(cell != ' ' for cell in cells)
+
+    @database_sync_to_async
+    def mark_game_inactive(self):
+        game = Game.objects.get(id=self.game_id)
+        game.is_active = False
         game.save()
 
     async def player_leave(self, event):
