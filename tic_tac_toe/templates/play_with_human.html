@@ -55,7 +55,7 @@
 
         cells.forEach(function(cell) {
             cell.addEventListener('click', function() {
-                if (!cell.classList.contains('non-clickable') && cell.innerText === '') {
+                if (!cell.classList.contains('non-clickable') && cell.innerText === '' && currentPlayer == '{{ user.username }}' ) {
                     const marker = currentPlayer === player1Username ? 'X' : 'O';
                     cell.innerText = marker;
                     cell.classList.add('non-clickable');
