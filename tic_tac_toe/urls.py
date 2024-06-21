@@ -17,6 +17,6 @@ urlpatterns = [
     path("create-game/", views.create_game, name="create_game"),
     path('update-game/', views.update_game, name='update_game'),
     path('game-state/<int:game_id>/', views.game_state, name='game_state'),
-    # Websocket URL pattern for the game consumer
+    path('mark-game-inactive/<int:game_id>/', views.mark_game_inactive, name='mark_game_inactive'),
     path("ws/play-game/<int:game_id>/", consumers.GameConsumer.as_asgi()),
 ]

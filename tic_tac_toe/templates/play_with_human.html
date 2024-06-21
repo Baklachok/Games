@@ -65,8 +65,10 @@
 
                     if (checkWin(marker)) {
                         alert("Поздравляем. " + currentPlayer + " выиграл!");
+                        markGameInactive()
                     } else if (checkTie()) {
                         alert("Ничья!");
+                        markGameInactive()
                     } else {
                         updateCurrentPlayerDisplay();
                     }
@@ -113,10 +115,13 @@
 
                 if (checkWin('X')) {
                     alert("Поздравляем. " + player1Username + " выиграл!");
+                    markGameInactive()
                 } else if (checkWin('O')) {
                     alert("Поздравляем. " + player2Username + " выиграл!");
+                    markGameInactive()
                 } else if (checkTie()) {
                     alert("Ничья!");
+                    markGameInactive()
                 } else {
                     currentPlayer = message.data.current_player;
                     updateCurrentPlayerDisplay();
@@ -146,10 +151,13 @@
                     // Проверяем состояние игры на наличие победителя или ничью
                      if (checkWin('X')) {
                         alert("Поздравляем. " + player1Username + " выиграл!");
+                        markGameInactive()
                     } else if (checkWin('O')) {
                         alert("Поздравляем. " + player2Username + " выиграл!");
+                        markGameInactive()
                     } else if (checkTie()) {
                         alert("Ничья!");
+                        markGameInactive()
                     }
                 })
                 .catch(error => {
@@ -157,7 +165,15 @@
                 });
         }
 
-    // Вызываем функцию обновления состояния игры после перезагрузки страницы
+        function markGameInactive() {
+            fetch(`/mark-game-inactive/${gameId}/`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
     updateGameState();
 
     });

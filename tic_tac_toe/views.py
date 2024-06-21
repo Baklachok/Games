@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from tic_tac_toe.models import GameStats, Game, Move
 
@@ -208,3 +209,14 @@ def update_game(request):
     else:
         return HttpResponse(status=405)
 
+@csrf_exempt
+@require_POST
+@login_required
+def mark_game_inactive(request, game_id):
+    try:
+        game = Game.objects.get(id=game_id)
+        game.is_active = False
+        game.save()
+        return JsonResponse({'message': 'Game marked as inactive'})
+    except Game.DoesNotExist:
+        return JsonResponse({'error': 'Game not found'}, status=404)
