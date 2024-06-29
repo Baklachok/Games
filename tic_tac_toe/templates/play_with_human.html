@@ -14,8 +14,9 @@
         {% endfor %}
     </div>
 
-    <!-- Элемент для отображения сообщений о подключении и отключении игроков -->
     <div id="player-status"></div>
+
+    <button id="return-button" style="display:none;" onclick="window.location.href='{% url 'play-with-human' %}'">Вернуться к активным играм</button>
 
 </main>
 
@@ -62,16 +63,6 @@
 
                     const position = Array.from(cells).indexOf(cell);
                     updateGameOnServer(position);
-
-                    if (checkWin(marker)) {
-                        alert("Поздравляем. " + currentPlayer + " выиграл!");
-                        markGameInactive()
-                    } else if (checkTie()) {
-                        alert("Ничья!");
-                        markGameInactive()
-                    } else {
-                        updateCurrentPlayerDisplay();
-                    }
                 }
             });
         });
@@ -115,13 +106,16 @@
 
                 if (checkWin('X')) {
                     alert("Поздравляем. " + player1Username + " выиграл!");
-                    markGameInactive()
+                    markGameInactive();
+                    showReturnButton();
                 } else if (checkWin('O')) {
                     alert("Поздравляем. " + player2Username + " выиграл!");
-                    markGameInactive()
+                    markGameInactive();
+                    showReturnButton();
                 } else if (checkTie()) {
                     alert("Ничья!");
-                    markGameInactive()
+                    markGameInactive();
+                    showReturnButton();
                 } else {
                     currentPlayer = message.data.current_player;
                     updateCurrentPlayerDisplay();
@@ -147,18 +141,6 @@
                         cells[position].innerText = marker;
                         cells[position].classList.add('non-clickable');
                     });
-
-                    // Проверяем состояние игры на наличие победителя или ничью
-                     if (checkWin('X')) {
-                        alert("Поздравляем. " + player1Username + " выиграл!");
-                        markGameInactive()
-                    } else if (checkWin('O')) {
-                        alert("Поздравляем. " + player2Username + " выиграл!");
-                        markGameInactive()
-                    } else if (checkTie()) {
-                        alert("Ничья!");
-                        markGameInactive()
-                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -172,6 +154,10 @@
                     console.log(data.message);
                 })
                 .catch(error => console.error('Error:', error));
+        }
+
+        function showReturnButton() {
+            document.getElementById('return-button').style.display = 'block';
         }
 
     updateGameState();

@@ -131,6 +131,8 @@ def join_game(request, game_id):
     if game.player2 is None and current_user != game.player1:
         game.player2 = current_user
         game.save()
+    elif game.player2 is not None:
+        return JsonResponse({'error': 'В этой игре уже 2 игрока'}, status=403)
 
     return redirect('play_game', game_id=game_id)
 
